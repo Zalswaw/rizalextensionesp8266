@@ -1,65 +1,49 @@
-let serverHost = ""
-let serverPath = "/iot.php"
+let firebaseHost = ""
+let firebasePath = "/iot.php"
 
 namespace firebase {
 
     let uploadSuccess = false
 
-    //============================
-    // SET SERVER HOST
-    //============================
-
     //% subcategory="Server"
-    //% block="Set Firebase Server %host"
-    export function setServerHost(host: string) {
+    //% block="Set Firebase Host %host"
+    export function setHost(host: string) {
 
-        serverHost = host
+        firebaseHost = host
             .replace("http://", "")
             .replace("https://", "")
             .replace("/", "")
     }
 
-    //============================
-    // SET SERVER PATH
-    //============================
-
     //% subcategory="Server"
     //% block="Set Firebase Path %path"
-    export function setServerPath(path: string) {
+    export function setPath(path: string) {
 
         if (path.charAt(0) != "/") {
             path = "/" + path
         }
 
-        serverPath = path
+        firebasePath = path
     }
 
-    //============================
-    // UPLOAD STATUS
-    //============================
-
     //% subcategory="Server"
-    //% block="Firebase Upload Success"
+    //% block="Firebase upload success"
     export function isUploadSuccess(): boolean {
         return uploadSuccess
     }
 
-    //============================
-    // SEND TO SERVER
-    //============================
-
     //% subcategory="Server"
-    //% block="Send Firebase path %path data %data"
+    //% block="Send to Firebase Path %path Data %data"
     export function send(path: string, data: string) {
 
         uploadSuccess = false
 
         if (!esp8266.isWifiConnected()) return
-        if (serverHost == "") return
+        if (firebaseHost == "") return
 
 
         if (!esp8266.sendCommand(
-            "AT+CIPSTART=\"TCP\",\"" + serverHost + "\",80",
+            "AT+CIPSTART=\"TCP\",\"" + firebaseHost + "\",80",
             "OK",
             5000
         )) return
@@ -67,11 +51,11 @@ namespace firebase {
 
         let safeData = esp8266.formatUrl(data)
 
-        let url = serverPath + "?path=" + path + "&data=" + safeData
+        let url = firebasePath + "?path=" + path + "&data=" + safeData
 
 
         let request = "GET " + url + " HTTP/1.1\r\n"
-        request += "Host: " + serverHost + "\r\n"
+        request += "Host: " + firebaseHost + "\r\n"
         request += "Connection: close\r\n\r\n"
 
 
@@ -96,3 +80,4 @@ namespace firebase {
         uploadSuccess = true
     }
 }
+
