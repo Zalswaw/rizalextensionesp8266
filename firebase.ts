@@ -1,7 +1,7 @@
 let serverHost = ""
 let serverPath = "/iot.php"
 
-namespace esp8266 {
+namespace firebase {
 
     let uploadSuccess = false
 
@@ -10,7 +10,7 @@ namespace esp8266 {
     //============================
 
     //% subcategory="Server"
-    //% block="Set Server Host %host"
+    //% block="Set Firebase Server %host"
     export function setServerHost(host: string) {
 
         serverHost = host
@@ -24,7 +24,7 @@ namespace esp8266 {
     //============================
 
     //% subcategory="Server"
-    //% block="Set Server Path %path"
+    //% block="Set Firebase Path %path"
     export function setServerPath(path: string) {
 
         if (path.charAt(0) != "/") {
@@ -39,7 +39,7 @@ namespace esp8266 {
     //============================
 
     //% subcategory="Server"
-    //% block="Upload success"
+    //% block="Firebase Upload Success"
     export function isUploadSuccess(): boolean {
         return uploadSuccess
     }
@@ -49,23 +49,23 @@ namespace esp8266 {
     //============================
 
     //% subcategory="Server"
-    //% block="Send to Server Path %path Data %data"
-    export function sendToServer(path: string, data: string) {
+    //% block="Send Firebase path %path data %data"
+    export function send(path: string, data: string) {
 
         uploadSuccess = false
 
-        if (!isWifiConnected()) return
+        if (!esp8266.isWifiConnected()) return
         if (serverHost == "") return
 
 
-        if (!sendCommand(
+        if (!esp8266.sendCommand(
             "AT+CIPSTART=\"TCP\",\"" + serverHost + "\",80",
             "OK",
             5000
         )) return
 
 
-        let safeData = formatUrl(data)
+        let safeData = esp8266.formatUrl(data)
 
         let url = serverPath + "?path=" + path + "&data=" + safeData
 
@@ -75,25 +75,24 @@ namespace esp8266 {
         request += "Connection: close\r\n\r\n"
 
 
-        sendCommand("AT+CIPSEND=" + request.length)
-        sendCommand(request)
+        esp8266.sendCommand("AT+CIPSEND=" + request.length)
+        esp8266.sendCommand(request)
 
 
-        if (getResponse("SEND OK", 3000) == "") {
-            sendCommand("AT+CIPCLOSE", "OK", 1000)
+        if (esp8266.getResponse("SEND OK", 3000) == "") {
+            esp8266.sendCommand("AT+CIPCLOSE", "OK", 1000)
             return
         }
 
 
-        if (getResponse("200 OK", 5000) == "") {
-            sendCommand("AT+CIPCLOSE", "OK", 1000)
+        if (esp8266.getResponse("200 OK", 5000) == "") {
+            esp8266.sendCommand("AT+CIPCLOSE", "OK", 1000)
             return
         }
 
 
-        sendCommand("AT+CIPCLOSE", "OK", 1000)
+        esp8266.sendCommand("AT+CIPCLOSE", "OK", 1000)
 
         uploadSuccess = true
     }
 }
-
